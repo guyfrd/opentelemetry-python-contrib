@@ -86,7 +86,23 @@ class TestPyMysqlIntegration(TestBase):
         span = spans_list[0]
 
         self.assertIs(span.resource, resource)
+        
+    @patch("pymysql.connect", new=mock_connect)
+    # pylint: disable=unused-argument
+    def test_capture_parameters(self):
+        PyMySQLInstrumentor().instrument(capture_parameters=True)
 
+        cnx = pymysql.connect(database="test")
+        cursor = cnx.cursor()
+        query = "INSERT INTO store VALUES (%s, %s, %s)"
+        params = ("1", "2", "3")
+        cursor.execute(query, params)
+        spans_list = self.memory_exporter.get_finished_spans()
+        self.assertEqual(len(spans_list), 1)
+        span = spans_list[0]
+        print(span.attributes)
+        self.assertEqual(span.attributes["db.statement.parameters"], str(params))
+    
     @patch("pymysql.connect", new=mock_connect)
     # pylint: disable=unused-argument
     def test_instrument_connection(self):

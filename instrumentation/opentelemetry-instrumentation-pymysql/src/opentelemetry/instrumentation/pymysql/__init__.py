@@ -67,7 +67,8 @@ class PyMySQLInstrumentor(BaseInstrumentor):
         https://github.com/PyMySQL/PyMySQL/
         """
         tracer_provider = kwargs.get("tracer_provider")
-
+        capture_parameters = kwargs.get("capture_parameters")
+        
         dbapi.wrap_connect(
             __name__,
             pymysql,
@@ -76,6 +77,7 @@ class PyMySQLInstrumentor(BaseInstrumentor):
             _CONNECTION_ATTRIBUTES,
             version=__version__,
             tracer_provider=tracer_provider,
+            capture_parameters=capture_parameters
         )
 
     def _uninstrument(self, **kwargs):
@@ -83,13 +85,15 @@ class PyMySQLInstrumentor(BaseInstrumentor):
         dbapi.unwrap_connect(pymysql, "connect")
 
     @staticmethod
-    def instrument_connection(connection, tracer_provider=None):
+    def instrument_connection(connection, tracer_provider=None, capture_parameters=False):
         """Enable instrumentation in a PyMySQL connection.
 
         Args:
             connection: The connection to instrument.
             tracer_provider: The optional tracer provider to use. If omitted
                 the current globally configured one is used.
+            capture_parameters: Configure if db.statement.parameters should be captured.
+
 
         Returns:
             An instrumented connection.
@@ -102,6 +106,7 @@ class PyMySQLInstrumentor(BaseInstrumentor):
             _CONNECTION_ATTRIBUTES,
             version=__version__,
             tracer_provider=tracer_provider,
+            capture_parameters=capture_parameters
         )
 
     @staticmethod
